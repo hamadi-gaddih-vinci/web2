@@ -32,9 +32,56 @@ router.get('/', (req, res, next) => {
         return res.json(tabfilm);
     }
     let tableauMinimumDuration = [];
-
-
     
+    tabfilm.map((film) => {
+        if(film.duration > orderByDuration){
+            tableauMinimumDuration.push(film);
+        };    
+    });
+    res.json(tableauMinimumDuration);
 });
 
+// read one film from ID
+router.get('/:id', (req, res) => {
+    console.log('GET /film');
+    const indexOfFilm = tabfilm.findIndex((film) => film.id == req.params.id);
+
+    if (indexOfFilm < 0) return res.sendStatus(404)
+
+    res.json(tabfilm[indexOfFilm]);
+});
+
+router.post('/', (req, res) => {
+    console.log("je suis dans la route post");
+    const title = req?.body?.title?.lenght ? req.body.title : undefined;
+    const duration = req?.body.duration > 0 ? req.body.duration : undefined;
+    const budget = req?.body.budget > 0 ? req.body.budget : undefined;
+    const link = req?.body.link?.lenght ? req.body.link : undefined;
+
+    console.log("POST FILM");
+
+    if(!title || !duration || !budget || !link){
+        return res.sendStatus(400) //bad request;
+    };
+    
+    let lastIndex = 0;
+
+    tabfilm.map((film) => {
+        if(film.id > lastIndex){
+            lastIndex = film.id;
+        };
+    });
+
+    const newFilm = {
+        id: lastIndex +1,
+        title,
+        duration,
+        budget,
+        link,
+    };
+
+    tabfilm.push(newFilm);
+    
+    res.json(newFilm);
+});
 module.exports = router;
