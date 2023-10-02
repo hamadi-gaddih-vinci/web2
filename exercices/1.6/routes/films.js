@@ -108,6 +108,49 @@ router.patch('/:id', (req, res) => {
     const link = req?.body?.link;
 
     console.log('POST /films');
-    //terminer;
+    
+    if(!title && !duration && !budget && !link) return res.sendStatus(400);
+
+    if(Number(duration) < 0 || budget < 0) return res.sendStatus(400);
+
+    const foundIndex = tabfilm.findIndex(film => film.id === req.params.id);
+
+    if(foundIndex < 0 ) return res.sendStatus(404);
+
+    const updatedFilm = {...tabfilm[foundIndex], ...req.body};
+
+    tabfilm[foundIndex] = updatedFilm;
+
+    res.json(updatedFilm);
+
+});
+
+router.put('/:id', (req, res) => {
+    console.log(`PUT /films/${req.params.id}`);
+
+    const title = req?.body?.title;
+    const duration = req?.body?.duration;
+    const budget = req?.body?.budget;
+    const link = req?.body?.link;
+
+    console.log('POST /films');
+    
+    if(!title|| !duration || !budget || !link || Number(duration) < 0 || budget < 0) return res.sendStatus(400);
+
+    const foundIndex = tabfilm.findIndex(film => film.id === req.params.id);
+    
+    if(foundIndex < 0){
+        const newFilm = {id, title, link, duration, budget};
+        tabfilm.push(newFilm);
+        return res.json(newFilm);
+    }
+    
+    const updatedFilm = {...tabfilm[foundIndex], ...req.body};
+
+    tabfilm[foundIndex] = updatedFilm;
+
+    res.json(updatedFilm);    
+
 })
+
 module.exports = router;
