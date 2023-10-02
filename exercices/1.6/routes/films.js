@@ -64,6 +64,14 @@ if(!title|| !duration || !budget || !link || Number(duration) < 0 || budget < 0)
 
 const index = tabfilm.length+1;
 
+const filmExistant = tabfilm.find((film) => 
+film.title.toLocaleLowerCase() === title.toLocaleLowerCase());
+
+if(filmExistant){
+    return res.sendStatus(409)
+}
+
+
 const newFilm = {
 id: index,
 title: title,
@@ -78,4 +86,28 @@ tabfilm.push(newFilm);
 res.json(newFilm);
 });
 
+router.delete('/:id', (req,res) => {
+    console.log(`DELETE /pizzas/${req.params.id}`);
+
+    const foundIndex = tabfilm.findIndex(film => film.id === req.params.id);
+
+    if(foundIndex < 0) return res.sendStatus(404);
+
+    const itemsRemovedFromTab = tabfilm.splice(foundIndex, 1);
+    const itemRemoved = itemsRemovedFromTab[0];
+
+    res.json(itemRemoved);
+});
+
+router.patch('/:id', (req, res) => {
+    console.log(`PATCH /films/${req.params.id}`);
+
+    const title = req?.body?.title;
+    const duration = req?.body?.duration;
+    const budget = req?.body?.budget;
+    const link = req?.body?.link;
+
+    console.log('POST /films');
+    //terminer;
+})
 module.exports = router;

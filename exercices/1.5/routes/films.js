@@ -64,6 +64,14 @@ if(!title|| !duration || !budget || !link || Number(duration) < 0 || budget < 0)
 
 const index = tabfilm.length+1;
 
+const filmExistant = tabfilm.find((film) => 
+film.title.toLocaleLowerCase() === title.toLocaleLowerCase());
+
+if(filmExistant){
+    return res.sendStatus(409)
+}
+
+
 const newFilm = {
 id: index,
 title: title,

@@ -1,0 +1,17 @@
+### Read all pizzas
+GET http://localhost:3000/films
+
+### Read all pizzas with File variable
+@baseUrl = http://localhost:3000
+GET {{baseUrl}}/films
+
+### Create a film
+POST {{baseUrl}}/films
+Content-Type: application/json
+
+{
+"title":"Silence des agneaux",
+"duration":100,
+"budget":1500000,
+"link":"https://www.allocine.fr/film/fichefilm_gen_cfilm=6641.html"
+}
