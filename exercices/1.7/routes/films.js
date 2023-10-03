@@ -1,5 +1,8 @@
 var express = require('express');
+const { serialize, parse } = require('../utils/json');
 var router = express.Router();
+
+const jsonDbPath = __dirname + '/../data/films.json';
 
 const tabfilm = [
 {
@@ -28,14 +31,16 @@ link: 'https://www.allocine.fr/film/fichefilm_gen_cfilm=288402.html#:~:text=Syno
 router.get('/', (req, res, next) => {
 console.log('GET /films');
 const filterByDuration = req?.query?.['minimum-duration'] ? Number(req.query['minimum-duration']) : undefined;
+const films = parse(jsonDbPath, tabfilm);
+
 if(!filterByDuration){
-return res.json(tabfilm);
+return res.json(films);
 }
 let tableauMinimumDuration = [];
 
-for(i = 0; i < tabfilm.length; i++){
-if(tabfilm[i].duration >= filterByDuration){
-tableauMinimumDuration.push(tabfilm[i])
+for(i = 0; i < films.length; i++){
+if(films[i].duration >= filterByDuration){
+tableauMinimumDuration.push(films[i])
 }
 }
 return res.json(tableauMinimumDuration);
@@ -44,27 +49,31 @@ return res.json(tableauMinimumDuration);
 router.get('/:id', (req, res, next) => {
 console.log(`GET /films/${req.params.id}`);
 
-const indexOfFilmFound = tabfilm.findIndex((film) => film.id === Number(req.params.id));
+const films = parse(jsonDbPath, tabfilm);
+
+const indexOfFilmFound = films.findIndex((film) => film.id === Number(req.params.id));
 
 if(indexOfFilmFound < 0) return res.sendStatus(404);
 
-res.json(tabfilm[indexOfFilmFound]);
+res.json(films[indexOfFilmFound]);
 });
 
 router.post('/', (req, res, next) => {
 
-const title = req?.body?.title?.length !== 0 ? req.body.title : undefined;
+const title = req?.body?.title?.trim().length !== 0 ? req.body.title : undefined;
 const duration = req?.body?.duration?.length !== 0 ? req.body.duration : undefined;
 const budget = req?.body?.budget?.length !== 0 ? req.body.budget : undefined;
-const link = req?.body?.link?.length !== 0 ? req.body.link : undefined;
+const link = req?.body?.link?.trim().length !== 0 ? req.body.link : undefined;
 
 console.log('POST CREATE ONE');
 
 if(!title|| !duration || !budget || !link || Number(duration) < 0 || budget < 0) return res.sendStatus(400);
 
-const index = tabfilm.length+1;
+const films = parse(jsonDbPath, tabfilm);
 
-const filmExistant = tabfilm.find((film) => 
+const index = films.length+1;
+
+const filmExistant = films.find((film) => 
 film.title.toLocaleLowerCase() === title.toLocaleLowerCase());
 
 if(filmExistant){
@@ -80,8 +89,9 @@ budget: budget,
 link: link,
 };
 
-tabfilm.push(newFilm);
+films.push(newFilm);
 
+serialize(jsonDbPath, films);
 
 res.json(newFilm);
 });
@@ -89,12 +99,16 @@ res.json(newFilm);
 router.delete('/:id', (req,res) => {
     console.log(`DELETE /pizzas/${req.params.id}`);
 
-    const foundIndex = tabfilm.findIndex(film => film.id === Number(req.params.id));
+    const films = parse(jsonDbPath, tabfilm);
+
+    const foundIndex = films.findIndex(film => film.id === Number(req.params.id));
 
     if(foundIndex < 0) return res.sendStatus(404);
 
-    const itemsRemovedFromTab = tabfilm.splice(foundIndex, 1);
+    const itemsRemovedFromTab = films.splice(foundIndex, 1);
     const itemRemoved = itemsRemovedFromTab[0];
+
+    serialize(jsonDbPath, films);
 
     res.json(itemRemoved);
 });
@@ -102,25 +116,29 @@ router.delete('/:id', (req,res) => {
 router.patch('/:id', (req, res) => {
     console.log(`PATCH /films/${req.params.id}`);
 
-    const title = req?.body?.title?.length !== 0 ? req.body.title : undefined;
+    const title = req?.body?.title?.trim().length !== 0 ? req.body.title : undefined;
     const duration = req?.body?.duration?.length !== 0 ? req.body.duration : undefined;
     const budget = req?.body?.budget?.length !== 0 ? req.body.budget : undefined;
-    const link = req?.body?.link?.length !== 0 ? req.body.link : undefined;
-
-
+    const link = req?.body?.link?.trim().length !== 0 ? req.body.link : undefined;
+    
     console.log('POST /films');
     
+
     if(!title && !duration && !budget && !link) return res.sendStatus(400);
 
     if(Number(duration) < 0 || budget < 0) return res.sendStatus(400);
 
-    const foundIndex = tabfilm.findIndex(film => film.id === Number(req.params.id));
+    const films = parse(jsonDbPath, tabfilm);
+
+    const foundIndex = films.findIndex(film => film.id === Number(req.params.id));
 
     if(foundIndex < 0 ) return res.sendStatus(404);
 
-    const updatedFilm = {...tabfilm[foundIndex], ...req.body};
+    const updatedFilm = {...films[foundIndex], ...req.body};
 
-    tabfilm[foundIndex] = updatedFilm;
+    films[foundIndex] = updatedFilm;
+
+    serialize(jsonDbPath, films);
 
     res.json(updatedFilm);
 
@@ -129,30 +147,33 @@ router.patch('/:id', (req, res) => {
 router.put('/:id', (req, res) => {
     console.log(`PUT /films/${req.params.id}`);
 
-    const title = req?.body?.title?.length !== 0 ? req.body.title : undefined;
+    const title = req?.body?.title?.trim().length !== 0 ? req.body.title : undefined;
     const duration = req?.body?.duration?.length !== 0 ? req.body.duration : undefined;
     const budget = req?.body?.budget?.length !== 0 ? req.body.budget : undefined;
-    const link = req?.body?.link?.length !== 0 ? req.body.link : undefined;
-    
+    const link = req?.body?.link?.trim().length !== 0 ? req.body.link : undefined;
 
     console.log('POST /films');
     
     if(!title|| !duration || !budget || !link || Number(duration) < 0 || budget < 0) return res.sendStatus(400);
 
-    const foundIndex = tabfilm.findIndex(film => film.id === Number(req.params.id));
+    const films = parse(jsonDbPath, tabfilm);
+
+    const foundIndex = films.findIndex(film => film.id === Number(req.params.id));
     
     if(foundIndex < 0){
         const newFilm = {id, title, link, duration, budget};
-        tabfilm.push(newFilm);
+        films.push(newFilm);
         return res.json(newFilm);
     }
     
-    const updatedFilm = {...tabfilm[foundIndex], ...req.body};
+    const updatedFilm = {...films[foundIndex], ...req.body};
 
-    tabfilm[foundIndex] = updatedFilm;
+    films[foundIndex] = updatedFilm;
+
+    serialize(jsonDbPath, films);
 
     res.json(updatedFilm);    
 
-})
+});
 
 module.exports = router;
